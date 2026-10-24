@@ -221,6 +221,8 @@ class LampPanel {
                                 dc.getFontHeight(Graphics.FONT_SMALL),
                                 dc.getFontHeight(Graphics.FONT_MEDIUM),
                                 dc.getFontHeight(Graphics.FONT_LARGE),
+                                dc.getFontHeight(_lamp.canSwitch() ? Graphics.FONT_LARGE
+                                                           : Graphics.FONT_SMALL),
                                 isRound(dc));
 
         // Chaque bandeau a sa propre abscisse et sa propre largeur. Sur les 13
@@ -228,7 +230,7 @@ class LampPanel {
         // `PanelLayout` sur un rectangle — mais sur le cadran d'un Venu 4 la
         // grille est nettement plus large que le titre, qui lui est plus haut
         // et donc sur une corde plus courte.
-        _drawHeader(dc, m.headerX, m.headerY, m.headerW);
+        _drawHeader(dc, m.headerX, m.headerY, m.headerW, m.headerH);
         _drawBattery(dc, m.batteryX, m.batteryY, m.batteryW);
 
         if (m.heroH > 0) {
@@ -282,9 +284,8 @@ class LampPanel {
     // ---- Bandeau supérieur -------------------------------------------------
 
     private function _drawHeader(dc as Graphics.Dc, x as Lang.Number,
-                                 y as Lang.Number, w as Lang.Number) as Lang.Number {
-        var font = Graphics.FONT_SMALL;
-        var hh = dc.getFontHeight(font);
+                                 y as Lang.Number, w as Lang.Number,
+                                 hh as Lang.Number) as Lang.Number {
         var cy = y + hh / 2;
 
         // Roue dentée collée au bord droit. C'est le seul accès aux réglages
@@ -328,47 +329,50 @@ class LampPanel {
         if (_lamp.lastError != null) { title = _lamp.lastError; }
         var titleMax = right - 3 * dotR - _gap(hh) - x;
 
-        // Chevrons autour du titre : une tape sur le bandeau passe a l'autre
+        // Fleches aux deux bords du bandeau : une tape sur le bandeau passe a l'autre
         // lampe, en roulant comme a l'arret. Seulement si une autre a ete vue :
         // sinon la tape ferait perdre la seule lampe a portee le temps de deux
         // fenetres de recherche.
         var arrow = 0;
         var titleX = x;
+        var justify = Graphics.TEXT_JUSTIFY_LEFT;
         if (_lamp.canSwitch()) {
-            arrow = hh / 3;
-            titleX = x + arrow + _gap(hh);
+            // Assez grands pour se viser avec un gant, en roulant ; la zone de
+            // tape deborde sur les marges du bandeau, qui ne servent a rien.
+            arrow = hh;
             titleMax -= 2 * (arrow + _gap(hh));
-            hitBoxes.add([x, y, right - x, hh, ACTION_SWITCH]);
+            titleX = x + arrow + _gap(hh) + titleMax / 2;
+            justify = Graphics.TEXT_JUSTIFY_CENTER;
+            var g = _gap(hh);
+            var top = (y > g) ? y - g : 0;
+            hitBoxes.add([x, top, right - x, y + hh + g - top, ACTION_SWITCH]);
         }
 
         var titleFont = _fitFont(dc, title, titleMax,
             [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY]);
         dc.setColor(LC.UI_TEXT, Graphics.COLOR_TRANSPARENT);
         dc.drawText(titleX, cy, titleFont, title,
-                    Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+                    justify | Graphics.TEXT_JUSTIFY_VCENTER);
 
         if (arrow > 0) {
             _drawChevron(dc, x + arrow / 2, cy, arrow, -1);
-            _drawChevron(dc, titleX + dc.getTextWidthInPixels(title, titleFont)
-                             + _gap(hh) + arrow / 2, cy, arrow, 1);
+            _drawChevron(dc, right - 3 * dotR - _gap(hh) - arrow / 2, cy, arrow, 1);
         }
 
         return y + hh;
     }
 
-    //! Espacement proportionnel à la taille du texte voisin, pour que la
-    //! respiration du bandeau suive la résolution de l'écran.
-    //! Chevron de hauteur `s`, pointe a droite si `dir` vaut 1, a gauche si -1.
+    //! Fleche pleine de hauteur `s`, pointe a droite si `dir` vaut 1, a gauche si -1.
     private function _drawChevron(dc as Graphics.Dc, cx as Lang.Number, cy as Lang.Number,
                                   s as Lang.Number, dir as Lang.Number) as Void {
-        var pen = s / 4;
-        dc.setPenWidth(pen < 2 ? 2 : pen);
+        var tip = cx + dir * s / 2;
+        var back = cx - dir * s / 2;
         dc.setColor(LC.UI_ACCENT, Graphics.COLOR_TRANSPARENT);
-        dc.drawLine(cx - dir * s / 4, cy - s / 2, cx + dir * s / 4, cy);
-        dc.drawLine(cx + dir * s / 4, cy, cx - dir * s / 4, cy + s / 2);
-        dc.setPenWidth(1);
+        dc.fillPolygon([[back, cy - s / 2], [tip, cy], [back, cy + s / 2]]);
     }
 
+    //! Espacement proportionnel à la taille du texte voisin, pour que la
+    //! respiration du bandeau suive la résolution de l'écran.
     private function _gap(fontHeight as Lang.Number) as Lang.Number {
         var g = fontHeight / 4;
         return (g < 3) ? 3 : g;

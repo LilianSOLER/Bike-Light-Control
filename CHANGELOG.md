@@ -22,9 +22,10 @@ partagent `shared/`, et deux numéros divergents seraient ingérables.
   et un feu arrière, le second appui ramène au premier.
 - Le champ de données propose aussi « Changer de lampe » dans ses réglages sur
   le compteur, une fois une lampe connectée.
-- Chevrons ‹ › autour du titre de la lampe, dans le panneau et dans le champ de
-  données plein écran, dès qu'une autre lampe a été vue : une tape sur le
-  bandeau passe à l'autre lampe, y compris en roulant. Le changement ne fait
+- Grandes flèches ‹ › aux deux bords du titre de la lampe, dans le panneau et
+  dans le champ de données plein écran, dès qu'une autre lampe a été vue : le
+  bandeau s'agrandit pour qu'elles se visent en roulant, et une tape n'importe
+  où dessus passe à l'autre lampe. Le changement ne fait
   ni clignoter la lampe suivante ni changer son mode.
 - Les deux lampes restent connectées quand le compteur a une connexion libre :
   le premier changement appaire directement l'autre lampe, sans nouvelle

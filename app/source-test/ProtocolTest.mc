@@ -1092,8 +1092,8 @@ module ProtocolTest {
         // On verifie les deux etats de la rangee de niveaux : affichee, et
         // reservee mais vide — c'est le second qui garantit que toucher
         // « Eteint » ne deplace rien.
-        var m = new PanelLayout(w, h, nc, nl, nl > 0, hs, hm, hl, round);
-        var reserved = new PanelLayout(w, h, nc, 0, true, hs, hm, hl, round);
+        var m = new PanelLayout(w, h, nc, nl, nl > 0, hs, hm, hl, hl, round);
+        var reserved = new PanelLayout(w, h, nc, 0, true, hs, hm, hl, hl, round);
         if (nl > 0 && (reserved.rowsY != m.rowsY || reserved.catH != m.catH
                        || reserved.heroH != m.heroH || reserved.levY != m.levY)) {
             logger.error("la page bouge quand la rangee de niveaux se vide en "
