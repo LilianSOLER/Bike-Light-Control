@@ -435,6 +435,8 @@ class LampManager extends Ble.BleDelegate {
         _identifiedOnce = true;
         _identifyPending = false;
         _identifyStep = -1;
+        // Deux lampes « vues », pour que le bandeau montre ses chevrons.
+        _candidates = [null, null];
     }
 
     //! Vrai quand rien n'est en cours : ni recherche, ni liaison.
@@ -625,6 +627,12 @@ class LampManager extends Ble.BleDelegate {
         return _candidates.size();
     }
 
+    //! Vrai si une autre lampe que celle-ci a ete vue : c'est ce qui rend utile
+    //! le changement de lampe depuis le bandeau.
+    function canSwitch() as Lang.Boolean {
+        return isReady() && (nearbyCount() > 1 || _skipped != null);
+    }
+
     private function _connectToBest() as Void {
         if (_candidates.size() == 0) { return; }
         var best = _candidates[0] as Ble.ScanResult;
@@ -668,6 +676,19 @@ class LampManager extends Ble.BleDelegate {
         return (third as Lang.String).toNumber() != null;
     }
 
+    //! Type de la lampe, le nom l'emportant quand il est explicite : chez
+    //! iGPSPORT « TL » suivi d'un chiffre designe un feu arriere (TL30, TL50),
+    //! et une TL50 s'affichait « Lampe avant ».
+    static function lightTypeOf(name as Lang.String or Null,
+                                reported as Lang.Number) as Lang.Number {
+        if (name == null) { return reported; }
+        var upper = name.toUpper();
+        var at = upper.find("TL");
+        if (at == null) { return reported; }
+        var digit = upper.substring(at + 2, at + 3);
+        return (digit != null && digit.toNumber() != null) ? LC.BLT_TAIL_LIGHT : reported;
+    }
+
     //! Vrai si cet appareil a déjà été essayé et écarté.
     //!
     //! La comparaison porte sur l'appareil, pas sur son nom : deux exemplaires
@@ -698,7 +719,9 @@ class LampManager extends Ble.BleDelegate {
         _skipped = _paired;
         _identifyStep = -1;
         _identifyPending = false;
-        _identifiedOnce = false;
+        // Vrai et non faux : passer a l'autre lampe, souvent en roulant, ne doit
+        // ni la faire clignoter ni changer son mode — seulement la piloter.
+        _identifiedOnce = true;
         if (_device != null) {
             try { Ble.unpairDevice(_device); } catch (e) { }
             _device = null;
@@ -1088,7 +1111,10 @@ class LampManager extends Ble.BleDelegate {
         if (incoming.remainingMinutes != null) {
             status.remainingMinutes = incoming.remainingMinutes;
         }
-        if (incoming.lightType != null) { status.lightType = incoming.lightType; }
+        if (incoming.lightType != null) {
+            status.lightType = lightTypeOf((_paired == null) ? null : _paired.getDeviceName(),
+                                           incoming.lightType);
+        }
         if (incoming.configs != null) {
             if (status.configs == null) {
                 status.configs = incoming.configs;

@@ -25,6 +25,7 @@ class LampPanel {
     //! Hors de la plage des modes réels, qui va de 0 à 75.
     static const ACTION_SETTINGS = -1;
     static const ACTION_AUTO     = -2;
+    static const ACTION_SWITCH   = -3;
     static const ACTION_CATEGORY = -100;   // -100 - index de catégorie
 
     //! Forme des libellés d'une rangée de catégories, la même pour toutes.
@@ -326,17 +327,48 @@ class LampPanel {
         var title = (type == null) ? generic : generic + " " + LC.typeLabel(type);
         if (_lamp.lastError != null) { title = _lamp.lastError; }
         var titleMax = right - 3 * dotR - _gap(hh) - x;
+
+        // Chevrons autour du titre : une tape sur le bandeau passe a l'autre
+        // lampe, en roulant comme a l'arret. Seulement si une autre a ete vue :
+        // sinon la tape ferait perdre la seule lampe a portee le temps de deux
+        // fenetres de recherche.
+        var arrow = 0;
+        var titleX = x;
+        if (_lamp.canSwitch()) {
+            arrow = hh / 3;
+            titleX = x + arrow + _gap(hh);
+            titleMax -= 2 * (arrow + _gap(hh));
+            hitBoxes.add([x, y, right - x, hh, ACTION_SWITCH]);
+        }
+
         var titleFont = _fitFont(dc, title, titleMax,
             [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY]);
         dc.setColor(LC.UI_TEXT, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(x, cy, titleFont, title,
+        dc.drawText(titleX, cy, titleFont, title,
                     Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+
+        if (arrow > 0) {
+            _drawChevron(dc, x + arrow / 2, cy, arrow, -1);
+            _drawChevron(dc, titleX + dc.getTextWidthInPixels(title, titleFont)
+                             + _gap(hh) + arrow / 2, cy, arrow, 1);
+        }
 
         return y + hh;
     }
 
     //! Espacement proportionnel à la taille du texte voisin, pour que la
     //! respiration du bandeau suive la résolution de l'écran.
+    //! Chevron de hauteur `s`, pointe a droite si `dir` vaut 1, a gauche si -1.
+    private function _drawChevron(dc as Graphics.Dc, cx as Lang.Number, cy as Lang.Number,
+                                  s as Lang.Number, dir as Lang.Number) as Void {
+        var pen = s / 4;
+        dc.setPenWidth(pen < 2 ? 2 : pen);
+        dc.setColor(LC.UI_ACCENT, Graphics.COLOR_TRANSPARENT);
+        dc.drawLine(cx - dir * s / 4, cy - s / 2, cx + dir * s / 4, cy);
+        dc.drawLine(cx + dir * s / 4, cy, cx - dir * s / 4, cy + s / 2);
+        dc.setPenWidth(1);
+    }
+
     private function _gap(fontHeight as Lang.Number) as Lang.Number {
         var g = fontHeight / 4;
         return (g < 3) ? 3 : g;

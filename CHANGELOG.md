@@ -22,6 +22,12 @@ partagent `shared/`, et deux numéros divergents seraient ingérables.
   et un feu arrière, le second appui ramène au premier.
 - Le champ de données propose aussi « Changer de lampe » dans ses réglages sur
   le compteur, une fois une lampe connectée.
+- Chevrons ‹ › autour du titre de la lampe, dans le panneau et dans le champ de
+  données plein écran, dès qu'une autre lampe a été vue : une tape sur le
+  bandeau passe à l'autre lampe, y compris en roulant. Le changement ne fait
+  ni clignoter la lampe suivante ni changer son mode.
+- Une lampe dont le nom commence par « TL » suivi d'un chiffre (TL30, TL50)
+  s'affiche en feu arrière, même si elle se déclare autrement.
 
 ---
 
