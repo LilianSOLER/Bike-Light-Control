@@ -163,7 +163,7 @@ class FieldSettingsDelegate extends WatchUi.Menu2InputDelegate {
         }
 
         if (id == FieldSettings.ID_OTHER_LIGHT) {
-            _lamp.forgetCurrentLamp();
+            _lamp.switchLamp();
             WatchUi.popView(WatchUi.SLIDE_RIGHT);
             return;
         }

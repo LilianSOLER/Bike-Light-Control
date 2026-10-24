@@ -26,6 +26,12 @@ partagent `shared/`, et deux numéros divergents seraient ingérables.
   données plein écran, dès qu'une autre lampe a été vue : une tape sur le
   bandeau passe à l'autre lampe, y compris en roulant. Le changement ne fait
   ni clignoter la lampe suivante ni changer son mode.
+- Les deux lampes restent connectées quand le compteur a une connexion libre :
+  le premier changement appaire directement l'autre lampe, sans nouvelle
+  recherche, et les suivants sont instantanés. Si la lampe pilotée se perd,
+  l'autre reprend la main.
+- Un appairage refusé par la pile Bluetooth (`DevicePairException`) ne ferme
+  plus l'application : l'appareil est écarté et la recherche reprend.
 - Une lampe dont le nom commence par « TL » suivi d'un chiffre (TL30, TL50)
   s'affiche en feu arrière, même si elle se déclare autrement.
 

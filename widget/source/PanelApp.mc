@@ -357,7 +357,7 @@ class LampControlDelegate extends WatchUi.BehaviorDelegate {
             return;
         }
         if (action == LampPanel.ACTION_SWITCH) {
-            _lamp.forgetCurrentLamp();
+            _lamp.switchLamp();
             WatchUi.requestUpdate();
             return;
         }

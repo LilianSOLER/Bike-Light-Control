@@ -210,7 +210,7 @@ class LampView extends WatchUi.DataField {
                 return true;
             }
             if (action != null && action == LampPanel.ACTION_SWITCH) {
-                _lamp.forgetCurrentLamp();
+                _lamp.switchLamp();
                 return true;
             }
             if (action != null && action == LampPanel.ACTION_AUTO) {
