@@ -13,6 +13,18 @@ partagent `shared/`, et deux numéros divergents seraient ingérables.
 
 ---
 
+## [Non publié]
+
+### Modifié
+
+- « Changer de lampe » bascule entre deux lampes : la lampe quittée n'est plus
+  écartée pour la session, seulement jusqu'au changement suivant. Avec un phare
+  et un feu arrière, le second appui ramène au premier.
+- Le champ de données propose aussi « Changer de lampe » dans ses réglages sur
+  le compteur, une fois une lampe connectée.
+
+---
+
 ## [1.0.0] — 21/09/2026
 
 **Première version publique**, déposée le 21/09/2026. Deux fiches **nouvelles**

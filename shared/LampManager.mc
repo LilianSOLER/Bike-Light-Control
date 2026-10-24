@@ -119,6 +119,13 @@ class LampManager extends Ble.BleDelegate {
     //! recherche tournait en boucle sans jamais atteindre la vraie lampe.
     private var _rejected as Lang.Array = [];
 
+    //! Lampe quittee par « Changer de lampe ». Une seule, et pas dans
+    //! `_rejected` : avec un phare et un feu arriere, la quitter puis quitter
+    //! l'autre doit ramener a la premiere, pas laisser les deux ecartees.
+    //! shortcut: avec trois lampes ou plus, la bascule alterne entre les deux
+    //! plus proches ; tenir une liste ordonnee si le cas se presente.
+    private var _skipped as Ble.ScanResult or Null = null;
+
     //! Lampes reperees pendant la fenetre de choix en cours, la meilleure
     //! d'abord. Bornee : au-dela de quatre lampes autour de soi, la cinquieme
     //! n'apprend rien et la memoire d'un champ de donnees est comptee.
@@ -236,8 +243,9 @@ class LampManager extends Ble.BleDelegate {
                 // Fenetre vide. Si les seuls appareils visibles sont ceux
                 // qu'on a ecartes, on finit par leur redonner leur chance.
                 _emptyWindows++;
-                if (_rejected.size() > 0 && _emptyWindows >= EMPTY_WINDOWS_FORGET) {
+                if (_emptyWindows >= EMPTY_WINDOWS_FORGET) {
                     _rejected = [];
+                    _skipped = null;
                 }
                 _setScanning(false);
             } else if (!_scanning && _scanSeconds >= SCAN_PAUSE_S) {
@@ -334,6 +342,7 @@ class LampManager extends Ble.BleDelegate {
         _setScanning(false);
         _candidates = [];
         _rejected = [];
+        _skipped = null;
         state = STATE_IDLE;
     }
 
@@ -665,6 +674,7 @@ class LampManager extends Ble.BleDelegate {
     //! du meme modele s'annoncent « VS1800S » tous les deux, et ecarter l'un
     //! par son nom ecarterait aussi l'autre — celui qu'on cherche, justement.
     private function _isRejected(result as Ble.ScanResult) as Lang.Boolean {
+        if (_skipped != null && result.isSameDevice(_skipped)) { return true; }
         for (var i = 0; i < _rejected.size(); i++) {
             if (result.isSameDevice(_rejected[i] as Ble.ScanResult)) { return true; }
         }
@@ -685,7 +695,7 @@ class LampManager extends Ble.BleDelegate {
     //! une lampe qui n'est pas la sienne, on demande la suivante. Sans elle,
     //! savoir que la lampe est la mauvaise ne servirait a rien.
     function forgetCurrentLamp() as Void {
-        _reject(_paired);
+        _skipped = _paired;
         _identifyStep = -1;
         _identifyPending = false;
         _identifiedOnce = false;
